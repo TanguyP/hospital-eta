@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "985081105301",
+    "project_id": "hospital-eta",
+    "storage_bucket": "hospital-eta.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:985081105301:android:ebc893e5fb4f9b610b049c",
+        "android_client_info": {
+          "package_name": "com.example.hospital_eta"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBlXVv2Hr0aUz8wtbAZjdFarSCtektjBxk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
