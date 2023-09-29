@@ -1,7 +1,12 @@
+import 'dart:convert';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_geojson/flutter_map_geojson.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:http/http.dart' as http;
+import 'config.dart';
+
 
 void main() {
   runApp(const MyApp());
@@ -58,29 +63,93 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  LatLng? _bbox_corner_1;
+  LatLng? _bbox_corner_2;
+  double _duration_in_seconds = 0;
+  GeoJsonParser? _geo_json_parser;
+
+  initState() {
+    fetchItinerary();
+  }
+
+  fetchItinerary() async {
+    print("Fetching itinerary..");
+    final response = await http.get(Uri.parse(Config.getItineraryUrl));
+
+    print("Fetched");
+    final jsonBody = jsonDecode(response.body);
+    final feature = jsonBody['data']['features'][0];
+    print(jsonBody['data']);
+    print(feature['properties']['summary']['duration']);
+    setState(() {
+      _duration_in_seconds = feature['properties']['summary']['duration'];
+
+      final bbox = feature['bbox'];
+      _bbox_corner_1 = LatLng(bbox[1], bbox[0]);
+      _bbox_corner_2 = LatLng(bbox[3], bbox[2]);
+
+      _geo_json_parser = GeoJsonParser();
+      _geo_json_parser!.parseGeoJsonAsString(jsonEncode(jsonBody['data']));
+      print("Parsed");
+    });
+  }
+
+  List<Widget> buildMapChildren() {
+    List<Widget> children = [
+      TileLayer(
+        urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+        userAgentPackageName: 'com.example.app',
+      )
+    ];
+
+    if (_geo_json_parser != null) {
+      print("Geojson parser is not null");
+      children.add(PolygonLayer(polygons: _geo_json_parser!.polygons));
+      children.add(PolylineLayer(polylines: _geo_json_parser!.polylines));
+      children.add(MarkerLayer(markers: _geo_json_parser!.markers));
+    }
+
+    return children;
+  }
+
+  buildDurationText()  {
+    if (_duration_in_seconds < 60) {
+      return "$_duration_in_seconds seconds";
+    }
+
+    final minutes = _duration_in_seconds ~/ 60;
+    return "$minutes minutes";
+  }
+
   @override
   Widget build(BuildContext context) {
+    MapOptions options;
+    print("building map");
+    if (_bbox_corner_1 != null && _bbox_corner_2 != null) {
+      print("Bounds: ${_bbox_corner_1!.latitude} - ${_bbox_corner_1!.longitude} - ${_bbox_corner_2!.latitude} - ${_bbox_corner_2!.longitude}");
+      options = MapOptions(
+          bounds: LatLngBounds(_bbox_corner_1!, _bbox_corner_2!),
+      );
+    }
+    else {
+      print("center and zoom");
+      options = MapOptions(center: LatLng(50.609, 3.032), zoom: 9);
+    }
+
     return FlutterMap(
-      options: MapOptions(
-        center: LatLng(51.509364, -0.128928),
-        zoom: 9.2,
-      ),
+      options: options,
       nonRotatedChildren: [
         RichAttributionWidget(
+          popupInitialDisplayDuration: Duration(days: 365),
           attributions: [
             TextSourceAttribution(
-              'OpenStreetMap contributors',
+              buildDurationText(),
               onTap: () => launchUrl(Uri.parse('https://openstreetmap.org/copyright')),
             ),
           ],
         ),
       ],
-      children: [
-        TileLayer(
-          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-          userAgentPackageName: 'com.example.app',
-        ),
-      ],
+      children: buildMapChildren(),
     );
   }
 }
