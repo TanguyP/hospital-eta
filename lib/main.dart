@@ -73,14 +73,10 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   fetchItinerary() async {
-    print("Fetching itinerary..");
     final response = await http.get(Uri.parse(Config.getItineraryUrl));
 
-    print("Fetched");
     final jsonBody = jsonDecode(response.body);
     final feature = jsonBody['data']['features'][0];
-    print(jsonBody['data']);
-    print(feature['properties']['summary']['duration']);
     setState(() {
       _duration_in_seconds = feature['properties']['summary']['duration'];
 
@@ -90,7 +86,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
       _geo_json_parser = GeoJsonParser();
       _geo_json_parser!.parseGeoJsonAsString(jsonEncode(jsonBody['data']));
-      print("Parsed");
     });
   }
 
@@ -103,7 +98,6 @@ class _MyHomePageState extends State<MyHomePage> {
     ];
 
     if (_geo_json_parser != null) {
-      print("Geojson parser is not null");
       children.add(PolygonLayer(polygons: _geo_json_parser!.polygons));
       children.add(PolylineLayer(polylines: _geo_json_parser!.polylines));
       children.add(MarkerLayer(markers: _geo_json_parser!.markers));
@@ -124,15 +118,12 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     MapOptions options;
-    print("building map");
     if (_bbox_corner_1 != null && _bbox_corner_2 != null) {
-      print("Bounds: ${_bbox_corner_1!.latitude} - ${_bbox_corner_1!.longitude} - ${_bbox_corner_2!.latitude} - ${_bbox_corner_2!.longitude}");
       options = MapOptions(
           bounds: LatLngBounds(_bbox_corner_1!, _bbox_corner_2!),
       );
     }
     else {
-      print("center and zoom");
       options = MapOptions(center: LatLng(50.609, 3.032), zoom: 9);
     }
 
