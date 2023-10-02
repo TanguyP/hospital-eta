@@ -65,7 +65,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   LatLng? _bbox_corner_1;
   LatLng? _bbox_corner_2;
-  double _duration_in_seconds = 0;
+  num _duration_in_seconds = 0;
   GeoJsonParser? _geo_json_parser;
 
   initState() {
