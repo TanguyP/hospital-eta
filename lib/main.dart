@@ -130,11 +130,21 @@ class _MyHomePageState extends State<MyHomePage> {
     return FlutterMap(
       options: options,
       nonRotatedChildren: [
+        DefaultTextStyle.merge(
+          style: const TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            backgroundColor: Colors.white,
+          ),
+          child: Align(
+            alignment: Alignment.topCenter.add(const Alignment(0.0, 0.12)),
+            child: Text("Arrivée dans " + buildDurationText()),
+          ),
+        ),
         RichAttributionWidget(
-          popupInitialDisplayDuration: Duration(days: 365),
           attributions: [
             TextSourceAttribution(
-              buildDurationText(),
+              'OpenStreetMap contributors',
               onTap: () => launchUrl(Uri.parse('https://openstreetmap.org/copyright')),
             ),
           ],
